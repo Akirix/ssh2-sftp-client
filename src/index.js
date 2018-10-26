@@ -274,7 +274,10 @@ SftpClient.prototype.put = function(input, remotePath, useCompression, encoding,
   });
 };
 
-SftpClient.prototype.mkdir = function(path, recursive = false) {
+SftpClient.prototype.mkdir = function(path, recursive) {
+  if (typeof recursive == 'undefined'){
+    recursive = false;
+  }
   let sftp = this.sftp;
 
   let doMkdir = p => {
@@ -312,7 +315,10 @@ SftpClient.prototype.mkdir = function(path, recursive = false) {
   return mkdir(path);
 };
 
-SftpClient.prototype.rmdir = function(path, recursive = false) {
+SftpClient.prototype.rmdir = function(path, recursive) {
+  if (typeof recursive == 'undefined'){
+    recursive = false;
+  }
   let sftp = this.sftp;
 
   let doRmdir = p => {
