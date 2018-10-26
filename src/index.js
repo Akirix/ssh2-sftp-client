@@ -280,7 +280,7 @@ SftpClient.prototype.mkdir = function(path, recursive) {
   }
   let sftp = this.sftp;
 
-  let doMkdir = (p) => {
+  let doMkdir = p => {
     return new Promise((resolve, reject) => {
 
 
@@ -300,17 +300,18 @@ SftpClient.prototype.mkdir = function(path, recursive) {
   if (!recursive) {
     return doMkdir(path);
   }
-  let mkdir = async (p) => {
-    try {
-      let dir = osPath.parse(p).dir;
-      let type = await this.exists(dir);
+  let mkdir = p => {
+  let dir = osPath.parse(p).dir;
+    return this.exists(dir).then(type => {
       if (!type) {
-        await mkdir(dir);
+        return mkdir(dir).then(() => {
+          return doMkdir(p);
+        });
       }
-      return doMkdir(p);
-    } catch (err) {
+      else return doMkdir(p);
+    }).catch(err => {
       throw err;
-    }
+    });
   };
   return mkdir(path);
 };
@@ -321,7 +322,7 @@ SftpClient.prototype.rmdir = function(path, recursive) {
   }
   let sftp = this.sftp;
 
-  let doRmdir = (p) => {
+  let doRmdir = p => {
     return new Promise((resolve, reject) => {
 
       if (!sftp) {
@@ -341,21 +342,36 @@ SftpClient.prototype.rmdir = function(path, recursive) {
     return doRmdir(path);
   }
 
-  let rmdir = async (p) => {
-    try {
-      let list = await this.list(p);
+  let rmdir = p => {
+    return this.list(p).then(list => {
       let files = list.filter(item => item.type === '-');
       let dirs = list.filter(item => item.type === 'd');
-      for (let f of files) {
-        await this.delete(osPath.join(p, f.name));
-      }
-      for (let d of dirs) {
-        await rmdir(osPath.join(p, d.name));
-      }
-      return doRmdir(p);
-    } catch (err) {
+      let deleteFiles = (files, p) => {
+        if(files.length > 0){
+          let f = files.shift();
+          return this.delete(osPath.join(p, f.name)).then(() => {
+            return deleteFiles(files, p);
+          });
+        }
+        else return Promise.resolve();
+      };
+      deleteFiles(files, p).then(() => {
+        let deleteDirs = (dirs, p) => {
+          if(dirs.length > 0){
+            let d = dirs.shift();
+            return rmdir(osPath.join(p, d.name)).then(() => {
+              return deleteDirs(dirs, p);
+            });
+          }
+          else return Promise.resolve();
+        };
+        return deleteDirs(dirs, p).then(() => {
+          return doRmdir(p);
+        });
+      });
+    }).catch(err => {
       throw err;
-    }
+    });
   };
   return rmdir(path);
 };
