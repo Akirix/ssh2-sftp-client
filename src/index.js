@@ -75,7 +75,10 @@ SftpClient.prototype.exists = function(path) {
     if (!sftp) {
       return reject(new Error('sftp connect error'));
     }
-    let {dir, base} = osPath.parse(path);
+    
+    let parsedPath = osPath.parse(path);
+    let dir = parsedPath.dir;
+    let base = parsedPath.base;
     sftp.readdir(dir, (err, list) => {
       if (err) {
         if (err.code === 2) {
@@ -295,7 +298,7 @@ SftpClient.prototype.mkdir = function(path, recursive = false) {
   }
   let mkdir = async p => {
     try {
-      let {dir} = osPath.parse(p);
+      let dir = osPath.parse(p).dir;
       let type = await this.exists(dir);
       if (!type) {
         await mkdir(dir);
