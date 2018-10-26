@@ -280,7 +280,7 @@ SftpClient.prototype.mkdir = function(path, recursive) {
   }
   let sftp = this.sftp;
 
-  let doMkdir = p => {
+  let doMkdir = (p) => {
     return new Promise((resolve, reject) => {
 
 
@@ -300,7 +300,7 @@ SftpClient.prototype.mkdir = function(path, recursive) {
   if (!recursive) {
     return doMkdir(path);
   }
-  let mkdir = async p => {
+  let mkdir = async (p) => {
     try {
       let dir = osPath.parse(p).dir;
       let type = await this.exists(dir);
@@ -321,7 +321,7 @@ SftpClient.prototype.rmdir = function(path, recursive) {
   }
   let sftp = this.sftp;
 
-  let doRmdir = p => {
+  let doRmdir = (p) => {
     return new Promise((resolve, reject) => {
 
       if (!sftp) {
@@ -341,7 +341,7 @@ SftpClient.prototype.rmdir = function(path, recursive) {
     return doRmdir(path);
   }
 
-  let rmdir = async p => {
+  let rmdir = async (p) => {
     try {
       let list = await this.list(p);
       let files = list.filter(item => item.type === '-');
