@@ -87,7 +87,8 @@ SftpClient.prototype.exists = function(path) {
           reject(new Error(`Error listing ${dir}: code: ${err.code} ${err.message}`));          
         }
       } else {
-        let [type] = list.filter(item => item.filename === base).map(item => item.longname.substr(0, 1));
+        let arr = list.filter(item => item.filename === base).map(item => item.longname.substr(0, 1));
+        let type = arr[0];
         if (type) {
           resolve(type);
         } else {
